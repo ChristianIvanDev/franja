@@ -12,6 +12,7 @@ import {
 import { availabilityAt, buildDay, overlapRanges, suggest, type Person } from './schedule';
 import { decodeState, encodeState } from './share';
 import { buildIcs, googleCalendarUrl } from './calendar';
+import { ALL_ZONES, canonicalZone, parseOffsetQuery, searchCities, zonesByOffset } from './cities';
 
 const at = (iso: string) => Date.parse(iso);
 
@@ -156,5 +157,82 @@ describe('calendario', () => {
 
   it('genera el enlace de Google Calendar', () => {
     expect(googleCalendarUrl(event)).toContain('dates=20261110T150000Z%2F20261110T153000Z');
+  });
+});
+
+describe('cobertura mundial', () => {
+  const NOW = at('2026-11-10T12:00:00Z');
+
+  it('el catálogo incluye cada zona que conoce el motor de JavaScript', () => {
+    const known = new Set(ALL_ZONES);
+    const missing = Intl.supportedValuesOf('timeZone').map(canonicalZone).filter((z) => !known.has(z));
+    expect(missing).toEqual([]);
+    expect(ALL_ZONES.length).toBeGreaterThanOrEqual(418);
+  });
+
+  it('cubre todos los desfases del planeta, de UTC−12 a UTC+14', () => {
+    const groups = zonesByOffset(NOW);
+    expect(groups[0].offset).toBe(-12 * 60);
+    expect(groups[groups.length - 1].offset).toBe(14 * 60);
+    const engineOffsets = new Set(Intl.supportedValuesOf('timeZone').map((z) => offsetMinutes(z, NOW)));
+    for (const off of engineOffsets) expect(groups.some((g) => g.offset === off)).toBe(true);
+    // Cada zona aparece exactamente una vez en el explorador.
+    const listed = groups.flatMap((g) => g.cities.map((c) => c.timeZone));
+    expect(new Set(listed).size).toBe(listed.length);
+    expect(listed.length).toBe(ALL_ZONES.length);
+  });
+
+  it('todas las zonas tienen nombre y país legibles', () => {
+    for (const g of zonesByOffset(NOW)) {
+      for (const c of g.cities) {
+        expect(c.name, c.timeZone).toMatch(/\S/);
+        expect(c.country, c.timeZone).not.toMatch(/^[A-Z]{2}$/);
+      }
+    }
+  });
+
+  it('normaliza los nombres antiguos de zonas', () => {
+    expect(canonicalZone('Asia/Calcutta')).toBe('Asia/Kolkata');
+    expect(canonicalZone('Europe/Kiev')).toBe('Europe/Kyiv');
+    expect(canonicalZone('Europe/Madrid')).toBe('Europe/Madrid');
+    const legacy = encodeState({ people: [person('Ravi', 'Asia/Calcutta')] });
+    expect(decodeState(legacy)!.people[0].timeZone).toBe('Asia/Kolkata');
+  });
+});
+
+describe('búsqueda de ciudades', () => {
+  const NOW = at('2026-11-10T12:00:00Z');
+  const names = (q: string, n = 8) => searchCities(q, n, NOW).map((c) => c.name);
+
+  it('busca por ciudad sin importar acentos', () => {
+    expect(names('bogota')[0]).toBe('Bogotá');
+    expect(names('sao paulo')[0]).toBe('São Paulo');
+  });
+
+  it('busca por país en español', () => {
+    expect(names('japon')).toContain('Tokio');
+    expect(names('chile', 20)).toEqual(expect.arrayContaining(['Santiago', 'Isla de Pascua']));
+  });
+
+  it('busca por desfase', () => {
+    expect(names('UTC+5:45')).toContain('Katmandú');
+    expect(names('utc−12')).toEqual(['Islas Baker y Howland']);
+    expect(names('+14')).toContain('Kiritimati');
+    expect(names('gmt-3', 40)).toContain('Buenos Aires');
+  });
+
+  it('busca por abreviatura', () => {
+    expect(names('EST')[0]).toBe('Nueva York');
+    expect(names('jst')[0]).toBe('Tokio');
+  });
+
+  it('interpreta desfases escritos de muchas formas', () => {
+    expect(parseOffsetQuery('UTC+5:30')).toBe(330);
+    expect(parseOffsetQuery('gmt -3')).toBe(-180);
+    expect(parseOffsetQuery('+0545')).toBe(345);
+    expect(parseOffsetQuery('utc+5.5')).toBe(330);
+    expect(parseOffsetQuery('UTC')).toBe(0);
+    expect(parseOffsetQuery('+15')).toBeNull();
+    expect(parseOffsetQuery('madrid')).toBeNull();
   });
 });

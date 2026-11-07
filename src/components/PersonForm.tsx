@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { searchCities, type City } from '../lib/cities';
+import { ALL_ZONES, searchCities, type City } from '../lib/cities';
+import { ZoneExplorer } from './ZoneExplorer';
 import type { Person } from '../lib/schedule';
 import { formatMinutes, formatOffset, formatTime, offsetMinutes } from '../lib/time';
 
@@ -20,6 +21,7 @@ export function PersonForm({ initial, onSave, onDelete, onCancel }: Props) {
   const [active, setActive] = useState(0);
   const [start, setStart] = useState(initial?.workStart ?? 540);
   const [end, setEnd] = useState(initial?.workEnd ?? 1080);
+  const [exploring, setExploring] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const listId = useId();
 
@@ -78,7 +80,7 @@ export function PersonForm({ initial, onSave, onDelete, onCancel }: Props) {
             aria-activedescendant={open ? `${listId}-${active}` : undefined}
             autoComplete="off"
             value={query}
-            placeholder="Busca una ciudad o zona"
+            placeholder="Ciudad, país, UTC+5:30 o EST"
             onChange={(e) => {
               setQuery(e.target.value);
               setCity(null);
@@ -113,6 +115,20 @@ export function PersonForm({ initial, onSave, onDelete, onCancel }: Props) {
               ))}
             </ul>
           )}
+          {open && query.trim() && results.length === 0 && (
+            <div className="combo-list combo-empty">Sin resultados. Prueba con el país o con el desfase, como «UTC−3».</div>
+          )}
+          <button type="button" className="link-btn" onClick={() => setExploring(true)}>
+            Explorar las {ALL_ZONES.length} zonas del mundo
+          </button>
+          <ZoneExplorer
+            open={exploring}
+            onClose={() => setExploring(false)}
+            onPick={(c) => {
+              pick(c);
+              setExploring(false);
+            }}
+          />
         </div>
 
         <label className="field">

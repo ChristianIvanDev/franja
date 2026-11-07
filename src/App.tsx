@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PersonForm } from './components/PersonForm';
 import { SelectionPanel } from './components/SelectionPanel';
 import { Timeline } from './components/Timeline';
-import { cityForZone } from './lib/cities';
+import { ALL_ZONES, canonicalZone, cityForZone } from './lib/cities';
 import { buildDay, overlapRanges, suggest, type Person, type Range } from './lib/schedule';
 import { decodeState, encodeState, type ShareState } from './lib/share';
 import { SLOT_MINUTES, addDays, formatDate, formatOffset, formatTime, nextOffsetChange, todayIn, zonedToInstant } from './lib/time';
 
-const LOCAL_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+const LOCAL_ZONE = canonicalZone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
 const STORAGE_KEY = 'franja:v1';
 const DURATIONS = [2, 3, 4, 6]; // en bloques de 15 min
 
@@ -196,8 +196,9 @@ export default function App() {
           <section className="hero">
             <h1>Encuentra la hora en la que todo tu equipo coincide.</h1>
             <p className="lead">
-              Agrega a cada persona con su ciudad y su horario. Franja calcula la franja común, tiene en cuenta los cambios de
-              horario y te deja enviar la invitación en un clic. Sin cuentas: todo vive en el enlace.
+              Agrega a cada persona con su ciudad y su horario: funciona con las {ALL_ZONES.length} zonas horarias del mundo.
+              Franja calcula la franja común, tiene en cuenta los cambios de horario y te deja enviar la invitación en un
+              clic. Sin cuentas: todo vive en el enlace.
             </p>
             <div className="btn-row">
               <button className="btn btn-primary btn-lg" onClick={() => setEditing('new')}>

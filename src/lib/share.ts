@@ -1,3 +1,4 @@
+import { canonicalZone } from './cities';
 import type { Person } from './schedule';
 
 /** Estado compartible: todo cabe en el hash de la URL, sin backend ni cuentas. */
@@ -56,7 +57,7 @@ export function decodeState(hash: string): ShareState | null {
       .map((x, i) => ({
         id: `p${i}-${Math.random().toString(36).slice(2, 7)}`,
         name: x[0].slice(0, 40),
-        timeZone: x[1],
+        timeZone: canonicalZone(x[1]),
         city: typeof x[2] === 'string' ? x[2].slice(0, 60) : x[1],
         workStart: clampMinute(x[3]),
         workEnd: clampMinute(x[4]),
@@ -64,7 +65,7 @@ export function decodeState(hash: string): ShareState | null {
     return {
       people,
       date: typeof raw.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.d) ? raw.d : undefined,
-      refZone: validZone(raw.r) ? raw.r : undefined,
+      refZone: validZone(raw.r) ? canonicalZone(raw.r) : undefined,
       duration: typeof raw.l === 'number' && raw.l >= 1 && raw.l <= 32 ? raw.l : undefined,
     };
   } catch {
