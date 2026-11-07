@@ -8,6 +8,13 @@ Sin cuentas ni servidor: el equipo completo vive en el enlace.
 
 🔗 **Demo:** https://christianivandev.github.io/franja/
 
+<a href="https://christianivandev.github.io/franja/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/franja-oscuro.png">
+    <img alt="Franja mostrando a cinco personas en Ciudad de México, Madrid, Buenos Aires, Nueva York y Bangalore, con la franja común de 09:00 a 10:30 resaltada y la reunión sugerida de 09:15 a 10:15." src="docs/franja-claro.png">
+  </picture>
+</a>
+
 ---
 
 ## Qué hace

@@ -196,6 +196,7 @@ main {
   border-radius: 10px;
   border: 1px solid var(--line-strong);
   background: var(--surface);
+  color: var(--ink);
   font-weight: 500;
   font-size: 14px;
   text-decoration: none;
