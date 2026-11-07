@@ -22,6 +22,12 @@ Sin cuentas ni servidor: el equipo completo vive en el enlace.
 - **Todas las zonas horarias del mundo**: 420 zonas IANA en 247 países y territorios, con los 38 desfases que existen, de UTC−12 (islas Baker y Howland) a UTC+14 (Kiritimati).
 - **Búsqueda flexible**: por ciudad o país en español y sin importar acentos («japon», «Chile»), por desfase («UTC+5:45», «gmt-3», «+0530») o por abreviatura («EST», «CET», «IST», «JST»).
 - **Explorador del mundo**: todas las zonas agrupadas por desfase, con una tira que muestra cuántas zonas comparten cada hora.
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/explorador-oscuro.png">
+    <img alt="Explorador de zonas: 420 zonas, 38 desfases y 247 países y territorios. Una tira de barras muestra cuántas zonas hay en cada desfase de UTC−12 a UTC+14; debajo, la lista empieza en UTC−12 con las islas Baker y Howland." src="docs/explorador-claro.png">
+  </picture>
+
 - **Línea de tiempo de 24 h** por persona, alineada a la zona que elijas, con la hora local de cada uno a la vista.
 - **Franja común resaltada** y resumen en texto: «Coinciden 2 h: 09:00–11:00».
 - **Sugerencia automática** del mejor horario. Si no hay coincidencia total, propone el bloque con más gente y evita que quien no puede asistir quede en plena madrugada.
@@ -100,7 +106,10 @@ npm test           # tests con Vitest
 npm run typecheck  # TypeScript estricto
 npm run build      # build de producción
 npm run zones      # regenera el catálogo de zonas
+npm run screenshots  # regenera las capturas del README (con npm run dev activo)
 ```
+
+Las capturas se generan con `scripts/screenshots.mjs`, que maneja Chrome sin interfaz por el protocolo DevTools usando el `WebSocket` nativo de Node: abre la app con un equipo de ejemplo, hace clic como lo haría una persona y guarda las versiones clara y oscura.
 
 Cada push a `main` pasa por GitHub Actions (tipos, tests y build) y se publica en GitHub Pages.
 
